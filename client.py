@@ -17,9 +17,9 @@ def receive_messages():
         print(f"\nReceived: {message}")
 
 receive_thread = threading.Thread(target=receive_messages)
-receive_thread.start
+receive_thread.start()
 
 while True:
-    text = input("enter a message")
+    text = input("enter a message : ")
     data = {"type": "chat", "text":text}
     client_socket.sendall(pack_message(data))

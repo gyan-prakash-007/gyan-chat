@@ -11,16 +11,33 @@ server_socket.listen(5)
 
 print(f"Server listening on {HOST}:{PORT}")
 
+clients = []
+clients_lock = threading.Lock()
+
+
+def broadcast(message, sender_socket=None):
+    data = pack_message(message)
+    with clients_lock:
+        for client in clients:
+            client.sendall(data)
+
+
 def handle_client(client_socket, client_address):
     print(f"Handling client {client_address}")
+
+    with clients_lock:
+        clients.append(client_socket)
 
     while True:
         message = unpack_message(client_socket)
         if message is None:
             print(f"{client_address} disconnected")
+            with clients_lock:
+                clients.remove(client_socket)
             client_socket.close()
             break
         print(f"Received from {client_address}: {message}")
+        broadcast(message, sender_socket=client_socket)
 
 
 while True:
