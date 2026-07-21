@@ -1,5 +1,10 @@
 # gyan-chat 💬
 
+![Python](https://img.shields.io/badge/Python-3.x-6A5ACD?style=flat-square&logo=python&logoColor=white)
+![Protocol](https://img.shields.io/badge/Protocol-Custom%20TCP-8471E0?style=flat-square)
+![Sockets](https://img.shields.io/badge/Built%20with-Raw%20Sockets-9C93EB?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Feature%20Complete-7F77DD?style=flat-square)
+
 A real-time group chat app that runs in your terminal — built completely from scratch using raw network sockets. No chat libraries, no WebSocket frameworks. I designed my own rules for how messages travel between computers, and then built a server and client that follow those rules.
 
 I built this to actually understand what's happening underneath apps like Discord or WhatsApp, instead of just importing a library that does the hard part for me.
@@ -28,6 +33,19 @@ gyan-chat/
 ## What it actually does
 
 You run the server on one machine. Then anyone on the same network can run the client, pick a username, and start chatting with everyone else who's connected — live, in real time, right in the terminal. If someone's connection drops (even if their laptop crashes or their WiFi dies), the server notices within seconds and lets everyone know they left.
+
+---
+
+
+## How it works, at a glance
+
+<p align="center">
+  <img src="demo/gyan_chat_workflow.png" alt="gyan-chat workflow" width="750">
+</p>
+
+This diagram shows the complete journey of a client—from connecting to the server and choosing a username, to sending messages, responding to heartbeat checks, and finally disconnecting. The sections below explain each part of this workflow in more detail.
+
+
 
 ---
 
@@ -195,3 +213,9 @@ Building this wasn't a straight line — here are a few real problems I hit and 
 - **No chat history is saved** — once you close the client, that conversation is gone.
 - **No encryption** — messages travel as plain, readable text, which is fine for a local learning project but wouldn't be safe for anything sensitive.
 - **Mostly tested on one machine so far** (including over its real network address, not just talking to itself) — the design is ready for separate physical devices, but that specific test is still pending.
+
+---
+
+<p align="center">
+  <sub>Built by <a href="https://github.com/gyan-prakash-007">Gyan Prakash</a> — one socket, one bug, and one lesson at a time.</sub>
+</p>
