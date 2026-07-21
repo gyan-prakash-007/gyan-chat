@@ -8,7 +8,7 @@ PORT = 65432
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((HOST,PORT))
 
-username = input("Choose a Username: ")
+username = input("\nChoose a Username: ")
 client_socket.sendall(pack_message({"type":"join", "username": username}))
 
 response = unpack_message(client_socket)
@@ -25,7 +25,10 @@ if response.get("type") == "error":
 print("Connected as", username)
 def receive_messages():
     while True:
-        message = unpack_message(client_socket)
+        try :
+            message = unpack_message(client_socket)
+        except OSError:
+            break
         if message is None:
             print('\nDisconnected from server')
             break
@@ -50,5 +53,9 @@ receive_thread.start()
 
 while True:
     text = input("enter a message : ")
+    if text.strip() == "/bye":
+        print("Leaving the chat...")
+        client_socket.close()
+        break
     data = {"type": "chat", "text":text}
     client_socket.sendall(pack_message(data))
