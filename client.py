@@ -29,6 +29,11 @@ def receive_messages():
         if message is None:
             print('Disconnected from server')
             break
+
+        if message.get("type") == "ping":
+            client_socket.sendall(pack_message({"type": "pong"}))
+            continue
+        
         print(f"\nReceived: {message}")
 
 receive_thread = threading.Thread(target=receive_messages)

@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 from protocol import pack_message, unpack_message
 
 HOST = '127.0.0.1'
@@ -11,9 +12,12 @@ server_socket.listen(5)
 
 print(f"Server listening on {HOST}:{PORT}")
 
+
 clients = {}
 clients_lock = threading.Lock()
 
+PING_INTERVAL = 10
+TIMEOUT = 25
 
 def broadcast(message, sender_socket=None):
     data = pack_message(message)
@@ -23,6 +27,38 @@ def broadcast(message, sender_socket=None):
                 client.sendall(data)
             except OSError:
                 pass
+
+
+def heartbeat_loop():
+    while True :
+        time.sleep(PING_INTERVAL)
+        now = time.time()
+        dead_client = []
+
+        with clients_lock:
+            for client_socket, info in clients.items():
+                if now - info["last_seen"] > TIMEOUT:
+                    dead_client.append(client_socket)
+                else :
+                    try :
+                        client_socket.sendall(pack_message({"type": "ping"}))
+                    except OSError:
+                        dead_client.append(client_socket)
+
+        for client_socket in dead_client:
+            remove_client(client_socket)
+
+
+def remove_client(client_socket):
+    with clients_lock:
+        info = clients.pop(client_socket, None)
+
+    if info is None:
+        return
+    
+    client_socket.close()
+    print(f"{info["username"]} time out / disconnected")
+    broadcast({"type": "system", "text": f"{info['username']} left the chat"})
 
 
 def handle_client(client_socket, client_address):
@@ -42,7 +78,7 @@ def handle_client(client_socket, client_address):
     username = join_message.get("username")
 
     with clients_lock:
-        username_taken = username in clients.values()
+        username_taken = any(info["username"] == username for info in clients.values())
 
     if username_taken:
         error = {"type": "error", "reason":"username taken"}
@@ -51,7 +87,7 @@ def handle_client(client_socket, client_address):
         return
         
     with clients_lock:
-        clients[client_socket] = username
+        clients[client_socket] = {"username" : username , "last_seen": time.time()}
 
     ack = {"type": "join_ack", "status": "ok"}
     client_socket.sendall(pack_message(ack))
@@ -68,17 +104,20 @@ def handle_client(client_socket, client_address):
         if message is None:
             break
 
+        with clients_lock:
+            if client_socket in clients:
+                clients[client_socket]["last_seen"] = time.time()
+
+        if message.get("type") == "pong":
+            continue
+
         print(f"Received from {client_address}: {message}")
         broadcast(message, sender_socket=client_socket)
 
-    with clients_lock:
-        if client_socket in clients:
-            del clients[client_socket]
+    remove_client(client_socket)
 
-    client_socket.close()
-    broadcast({"type": "system", "text": f"{username} left the chat"})
-    print(f"{username} disconnected")
 
+threading.Thread(target=heartbeat_loop,daemon = True).start()
 
 
 while True:
