@@ -1,9 +1,4 @@
-# gyan-chat 💬
-
-![Python](https://img.shields.io/badge/Python-3.x-6A5ACD?style=flat-square&logo=python&logoColor=white)
-![Protocol](https://img.shields.io/badge/Protocol-Custom%20TCP-8471E0?style=flat-square)
-![Sockets](https://img.shields.io/badge/Built%20with-Raw%20Sockets-9C93EB?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Feature%20Complete-7F77DD?style=flat-square)
+# gyan-chat 
 
 A real-time group chat app that runs in your terminal — built completely from scratch using raw network sockets. No chat libraries, no WebSocket frameworks. I designed my own rules for how messages travel between computers, and then built a server and client that follow those rules.
 
@@ -53,16 +48,16 @@ This diagram shows the complete journey of a client—from connecting to the ser
 
 Below are the technical building blocks of this project, explained in plain English so you don't need a networking background to follow along.
 
-### 🧩 Custom message protocol
+### Custom message protocol
 **TCP** (Transmission Control Protocol) is what actually moves data between two computers reliably — but it only guarantees your bytes arrive in order, not that they arrive as neat, separate "messages." So I designed my own rules on top of TCP for how a message should be structured, sent, and understood — basically a mini language that my server and client both speak.
 
-### 📦 Message framing
+### Message framing
 Because TCP just sends a continuous stream of bytes with no built-in concept of "this is one message, this is the next," I had to solve that myself. Every message I send is preceded by a small number telling the receiver exactly how many bytes to expect. This way, the receiving side always knows exactly where one message ends and the next begins — even if the network splits or bundles the data unpredictably.
 
-### 🗂️ JSON-based messages
+### JSON-based messages
 **JSON** (JavaScript Object Notation) is just a simple, readable text format for structured data — like a labeled box instead of a random ball of text. Every message in this app is a small JSON object with a `type` (what kind of message it is) and whatever details go with it. This makes it easy for both sides to understand exactly what a message means and what to do with it.
 
-### 👋 Handshake (joining the chat)
+### Handshake (joining the chat)
 Before anyone can start chatting, they have to "introduce themselves" — the client sends the server their chosen username first. The server checks if that name is already taken by someone else currently in the chat. If it is, the person gets a polite rejection instead of just being let in and causing confusion. If it's free, they're officially welcomed in, and everyone else gets notified.
 
 ![Duplicate username rejected](demo/username-taken.png)
@@ -74,22 +69,22 @@ Once someone sends a message, the server doesn't just keep it to itself — it i
 ![Four clients chatting live in a group](demo/group-chat.png)
 *Four terminals — one server, three clients (`gyan`, `harsh`, `prem`) — all seeing each other's messages and join announcements in real time.*
 
-### 🧵 Multi-client support (threading)
+### Multi-client support (threading)
 Since multiple people need to be able to type and read messages at the exact same time, the server gives each connected person their own dedicated "thread" — basically a lightweight, independent worker that only pays attention to that one person, so nobody has to wait in line for their turn.
 
-### 🔒 Thread-safe shared data (locking)
+### Thread-safe shared data (locking)
 Since all these independent workers (threads) need to look at and update the same shared list of "who's currently online," there's a real risk of two of them accidentally colliding and corrupting that list at the same time. To prevent this, I used a **lock** — think of it as a "one person in the room at a time" rule — so only one thread can update that shared list at any given moment, keeping everything consistent and crash-free.
 
-### 💓 Heartbeat (detecting dead connections)
+### Heartbeat (detecting dead connections)
 Here's a problem: if someone's laptop just dies or their WiFi drops without warning, TCP doesn't always tell the server right away — the connection can just sit there looking "alive" when it's actually gone. To catch this, the server periodically sends a tiny "are you still there?" (`ping`) message to every client, and expects a quick "yes" (`pong`) back. If someone goes quiet for too long without replying, the server assumes they've disconnected, cleans them up, and lets everyone else know — all automatically, without needing anyone to send a real chat message first.
 
-### 🛡️ Crash-proof disconnect handling
+### Crash-proof disconnect handling
 When someone force-quits their app or their connection drops abruptly, trying to read from their now-broken connection can actually throw an error and crash the server if you're not careful. I specifically handled this so a single person disconnecting messily never takes down the whole chat for everyone else.
 
-### 🌐 Tested over a real local network
+### Tested over a real local network
 Beyond just running everything on one laptop, I also tested the server accepting connections through my machine's actual network address (not just the "talking to myself" `localhost` shortcut) — confirming it's genuinely ready to work across separate devices on the same WiFi.
 
-### 🚪 Clean exit with `/bye`
+### Clean exit with `/bye`
 Instead of having to force-quit your terminal to leave the chat, typing `/bye` closes your connection on purpose, in a controlled way. This means the server notices immediately (not after a heartbeat timeout) and announces your departure right away, with no error messages or ugly tracebacks on either side.
 
 ![Client leaving the chat](demo/disconnect.png)
