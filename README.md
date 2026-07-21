@@ -63,7 +63,7 @@ Before anyone can start chatting, they have to "introduce themselves" — the cl
 ![Duplicate username rejected](demo/username-taken.png)
 *A second client trying to join as `gyan` while `gyan` is already connected gets rejected immediately, instead of two people silently sharing one identity.*
 
-### 📢 Broadcasting
+### Broadcasting
 Once someone sends a message, the server doesn't just keep it to itself — it immediately forwards that message out to every other person currently connected, so everyone sees the conversation happen live, together.
 
 ![Four clients chatting live in a group](demo/group-chat.png)
