@@ -2,7 +2,7 @@ import socket
 import threading
 from protocol import pack_message, unpack_message
 
-HOST = '127.0.0.1'
+HOST = '192.168.29.222'
 PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,7 +33,7 @@ def receive_messages():
         if message.get("type") == "ping":
             client_socket.sendall(pack_message({"type": "pong"}))
             continue
-        
+
         print(f"\nReceived: {message}")
 
 receive_thread = threading.Thread(target=receive_messages)
