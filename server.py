@@ -23,6 +23,8 @@ def broadcast(message, sender_socket=None):
     data = pack_message(message)
     with clients_lock:
         for client in clients:
+            if client is sender_socket:
+                continue
             try:
                 client.sendall(data)
             except OSError:

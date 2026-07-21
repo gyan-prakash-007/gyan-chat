@@ -37,7 +37,7 @@ def receive_messages():
         msg_type = message.get("type")
         
         if msg_type == "chat":
-            print(f"{message.get('from', 'unknown')}: {message.get('text')}")
+            print(f"\n{message.get('from', 'unknown')}: {message.get('text')}")
         elif msg_type == "system":
              print(f"\n*** {message.get('text')} ***")
         elif msg_type == "error":
