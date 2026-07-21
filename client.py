@@ -2,13 +2,13 @@ import socket
 import threading
 from protocol import pack_message, unpack_message
 
-HOST = '192.168.29.222'
+HOST = '127.0.0.1'
 PORT = 65432
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((HOST,PORT))
 
-username = input("Choose a Username")
+username = input("Choose a Username: ")
 client_socket.sendall(pack_message({"type":"join", "username": username}))
 
 response = unpack_message(client_socket)
@@ -27,14 +27,23 @@ def receive_messages():
     while True:
         message = unpack_message(client_socket)
         if message is None:
-            print('Disconnected from server')
+            print('\nDisconnected from server')
             break
 
         if message.get("type") == "ping":
             client_socket.sendall(pack_message({"type": "pong"}))
             continue
-
-        print(f"\nReceived: {message}")
+        
+        msg_type = message.get("type")
+        
+        if msg_type == "chat":
+            print(f"{message.get('from', 'unknown')}: {message.get('text')}")
+        elif msg_type == "system":
+             print(f"\n*** {message.get('text')} ***")
+        elif msg_type == "error":
+            print(f"\nError: {message.get('reason')}")
+        else :
+            print(f"\nReceived: {message}")
 
 receive_thread = threading.Thread(target=receive_messages)
 receive_thread.start()

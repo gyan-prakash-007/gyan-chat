@@ -111,7 +111,8 @@ def handle_client(client_socket, client_address):
         if message.get("type") == "pong":
             continue
 
-        print(f"Received from {client_address}: {message}")
+        message["from"] = username
+        print(f"Received from {username}: {message}")
         broadcast(message, sender_socket=client_socket)
 
     remove_client(client_socket)
